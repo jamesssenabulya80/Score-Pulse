@@ -1,4 +1,4 @@
-function Sidebar() {
+function Sidebar({ selectedLeague, onSelectLeague }) {
   const leagues = [
     "Premier league",
     "La Liga",
@@ -16,7 +16,7 @@ function Sidebar() {
 
         <ul className="league-list">
           {leagues.map((league) => (
-            <li key={league}>
+            <li key={league} onClick={() => onSelectLeague(league)}>
               <span className="league-icon">⚽</span>
               {league}
             </li>

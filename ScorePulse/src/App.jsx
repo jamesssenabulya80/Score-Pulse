@@ -1,4 +1,5 @@
 import Navbar from "./components/Navbar";
+import Sidebar from "./components/sidebar";
 import Home from "./pages/Home";
 
 function App() {

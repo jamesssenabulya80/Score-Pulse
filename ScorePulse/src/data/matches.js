@@ -8,6 +8,7 @@ const matches = [
     awayScore: 1,
     status: "LIVE",
     minute: "67'",
+    day: "Today",
   },
 
   {
@@ -19,6 +20,7 @@ const matches = [
     awayScore: 0,
     status: "UPCOMING",
     minute: null,
+    day: "Tomorrow",
   },
 
   {
@@ -30,6 +32,7 @@ const matches = [
     awayScore: 1,
     status: "LIVE",
     minute: "42'",
+    day: "Today",
   },
 
   {
@@ -41,6 +44,7 @@ const matches = [
     awayScore: 0,
     status: "FINISHED",
     minute: null,
+    day: "Today",
   },
 ];
 
