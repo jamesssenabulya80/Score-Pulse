@@ -167,8 +167,11 @@ function Home() {
       <main className="main-content">
         <div className="page-heading">
           <div>
-            <h1>Football Scores</h1>
-            <p>Follow the action from around the world.</p>
+            <div className="logo">
+              <span>SCORE</span>PULSE
+            </div>
+
+            <p>Follow ⚽ from around the world.</p>
           </div>
         </div>
 
@@ -194,7 +197,7 @@ function Home() {
         </div>
 
         <div className="matches-selection">
-          <h2>Live Matches</h2>
+          <h2>Football Fixtures</h2>
 
           <div className="matches-list">
             {isLoading ? (
@@ -206,7 +209,7 @@ function Home() {
                 <MatchCard key={match.id} match={match} />
               ))
             ) : (
-              <p>No live matches found.</p>
+              <p>No matches found for {selectedDay} .</p>
             )}
           </div>
         </div>

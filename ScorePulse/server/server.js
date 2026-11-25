@@ -164,6 +164,55 @@ app.get("/api/fixtures", async (req, res) => {
   }
 });
 
+// GET CURRENT COMPETITIONS
+app.get("/api/leagues", async (req, res) => {
+  try {
+    const apiKey = process.env.FOOTBALL_API_KEY;
+
+    if (!apiKey) {
+      return res.status(500).json({
+        error: "Football API key is missing.",
+      });
+    }
+
+    const response = await fetch(
+      "https://v3.football.api-sports.io/leagues?current=true",
+      {
+        method: "GET",
+        headers: {
+          "x-apisports-key": apiKey,
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+
+      return res.status(response.status).json({
+        error: "Failed to fetch competitions.",
+        details: errorText,
+      });
+    }
+
+    const data = await response.json();
+
+    if (data.errors && Object.keys(data.errors).length > 0) {
+      return res.status(502).json({
+        error: "API-Football returned an error.",
+        details: data.errors,
+      });
+    }
+
+    res.json(data.response || []);
+  } catch (error) {
+    console.error("Competitions error:", error);
+
+    res.status(500).json({
+      error: "Unable to retrieve competitions.",
+    });
+  }
+});
+
 // START SERVER
 app.listen(PORT, () => {
   console.log(`ScorePulse server running on port ${PORT}`);
