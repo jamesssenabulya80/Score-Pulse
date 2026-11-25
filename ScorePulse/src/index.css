@@ -528,3 +528,79 @@ a {
   font-size: 12px;
   color: #8998ad;
 }
+
+/* DAY FILTER CONTAINER */
+.day-filter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  max-width: 100%;
+  padding: 5px;
+  margin-bottom: 24px;
+  background: #111827;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+}
+
+/* DAY FILTER BUTTONS */
+.day-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding: 9px 18px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: transparent;
+  color: #94a3b8;
+
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+
+  white-space: nowrap;
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+}
+
+/* HOVER EFFECT */
+.day-btn:hover {
+  background: #1e293b;
+  color: #f8fafc;
+}
+
+/* SELECTED BUTTON */
+.day-btn.active {
+  background: #2563eb;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+}
+
+/* CLICK EFFECT */
+.day-btn:active {
+  transform: scale(0.97);
+}
+
+/* KEYBOARD FOCUS */
+.day-btn:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 2px;
+}
+
+/* MOBILE RESPONSIVENESS */
+@media (max-width: 480px) {
+  .day-filter {
+    width: 100%;
+    gap: 4px;
+  }
+
+  .day-btn {
+    flex: 1;
+    padding: 9px 10px;
+    font-size: 12px;
+  }
+}

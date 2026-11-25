@@ -11,26 +11,57 @@ app.use(express.json());
 
 const PORT = process.env.PORT || 5000;
 
+// Get today's date in Uganda
+function getUgandaDate() {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Africa/Kampala",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+
+  const dateParts = {};
+
+  parts.forEach((part) => {
+    dateParts[part.type] = part.value;
+  });
+
+  return `${dateParts.year}-${dateParts.month}-${dateParts.day}`;
+}
+
+// Validate date format and actual calendar date
+function isValidDate(date) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    return false;
+  }
+
+  const parsedDate = new Date(`${date}T00:00:00Z`);
+
+  return (
+    !Number.isNaN(parsedDate.getTime()) &&
+    parsedDate.toISOString().slice(0, 10) === date
+  );
+}
+
 // Test route
 app.get("/", (req, res) => {
   res.json({
-    message: "LiveScore backend is running!",
+    message: "ScorePulse backend is running!",
   });
 });
 
 // LIVE FOOTBALL FIXTURES ROUTE
 app.get("/api/fixtures/live", async (req, res) => {
   try {
-    // 1. Check whether our API key exists
     const apiKey = process.env.FOOTBALL_API_KEY;
 
-    if (!apiKey === "84eb7ef6b1031c5b9e3bd33d040cde54") {
+    if (!apiKey) {
       return res.status(500).json({
         error: "Football API key is missing. Check your .env file.",
       });
     }
 
-    // 2. Request live fixtures from API-Football
+    // Request currently live fixtures
     const response = await fetch(
       "https://v3.football.api-sports.io/fixtures?live=all",
       {
@@ -41,18 +72,17 @@ app.get("/api/fixtures/live", async (req, res) => {
       },
     );
 
-    // 3. Check whether the external API responded successfully
     if (!response.ok) {
+      const errorText = await response.text();
+
       return res.status(response.status).json({
         error: "Football API request failed.",
-        status: response.status,
+        details: errorText,
       });
     }
 
-    // 4. Convert the API response into JavaScript data
     const data = await response.json();
 
-    // 5. Check for API-Football errors
     if (data.errors && Object.keys(data.errors).length > 0) {
       return res.status(502).json({
         error: "Football API returned an error.",
@@ -60,7 +90,6 @@ app.get("/api/fixtures/live", async (req, res) => {
       });
     }
 
-    // 6. Send the fixtures to whoever requested them
     res.json(data);
   } catch (error) {
     console.error("Live fixtures error:", error);
@@ -71,7 +100,71 @@ app.get("/api/fixtures/live", async (req, res) => {
   }
 });
 
+// DAILY FOOTBALL FIXTURES ROUTE
+app.get("/api/fixtures", async (req, res) => {
+  try {
+    const apiKey = process.env.FOOTBALL_API_KEY;
+
+    if (!apiKey) {
+      return res.status(500).json({
+        error: "Football API key is missing. Check your .env file.",
+      });
+    }
+
+    // Automatically use today's date if no date is provided
+    const date = req.query.date || getUgandaDate();
+
+    console.log("Fetching fixtures for:", date);
+
+    // Validate date
+    if (!isValidDate(date)) {
+      return res.status(400).json({
+        error:
+          "Invalid date. Use YYYY-MM-DD format with a valid calendar date.",
+      });
+    }
+
+    // Request ALL fixtures for the selected date
+    const response = await fetch(
+      `https://v3.football.api-sports.io/fixtures?date=${date}`,
+      {
+        method: "GET",
+        headers: {
+          "x-apisports-key": apiKey,
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+
+      return res.status(response.status).json({
+        error: "Failed to retrieve fixtures from API-Football.",
+        details: errorText,
+      });
+    }
+
+    const data = await response.json();
+
+    if (data.errors && Object.keys(data.errors).length > 0) {
+      return res.status(502).json({
+        error: "Football API returned an error.",
+        details: data.errors,
+      });
+    }
+
+    // Return all fixtures for the requested date
+    res.json(data);
+  } catch (error) {
+    console.error("Daily fixtures error:", error);
+
+    res.status(500).json({
+      error: "Unable to retrieve daily fixtures.",
+    });
+  }
+});
+
 // START SERVER
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`ScorePulse server running on port ${PORT}`);
 });

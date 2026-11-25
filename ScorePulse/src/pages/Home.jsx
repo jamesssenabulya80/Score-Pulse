@@ -3,13 +3,49 @@ import Sidebar from "../components/sidebar";
 
 import { useState, useEffect } from "react";
 
+// Calculate the date for Yesterday, Today or Tomorrow
+function getFixtureDate(day) {
+  // Get today's date according to Uganda's timezone
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Africa/Kampala",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+
+  // Extract the year, month and day
+  const dateParts = {};
+
+  parts.forEach((part) => {
+    dateParts[part.type] = part.value;
+  });
+
+  // Create a date object using the extracted date
+  const today = new Date(
+    `${dateParts.year}-${dateParts.month}-${dateParts.day}T00:00:00Z`,
+  );
+
+  // Determine how many days to move
+  const offsets = {
+    Yesterday: -1,
+    Today: 0,
+    Tomorrow: 1,
+  };
+
+  // Move the date backward or forward
+  today.setUTCDate(today.getUTCDate() + offsets[day]);
+
+  // Return the date in YYYY-MM-DD format
+  return today.toISOString().slice(0, 10);
+}
+
 // Convert API-Football data into our application's format
 function formatFixtures(fixtures) {
   return fixtures.map((fixture) => {
     const statusCode = fixture.fixture.status.short;
 
     // Identify matches currently in progress
-    const liveStatuses = ["1H", "HT", "2H", "ET", "BT", "P"];
+    const liveStatuses = ["1H", "HT", "2H", "ET", "BT", "P", "LIVE"];
 
     const isLive = liveStatuses.includes(statusCode);
 
@@ -31,7 +67,6 @@ function formatFixtures(fixtures) {
 
     return {
       id: fixture.fixture.id,
-
       league: fixture.league.name,
 
       homeTeam: fixture.teams.home.name,
@@ -59,28 +94,44 @@ function Home() {
   // Store raw API fixtures
   const [apiFixtures, setApiFixtures] = useState([]);
 
+  // Loading and error states
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+
   // Fetch live fixtures from our backend
   useEffect(() => {
-    async function fetchLiveFixtures() {
-      try {
-        const response = await fetch("http://localhost:5000/api/fixtures/live");
+    // Create the date for the selected day
+    const date = getFixtureDate(selectedDay);
 
-        if (!response.ok) {
-          throw new Error("Failed to fetch live fixtures");
-        }
+    // Fetch fixtures from our backend
+    async function fetchFixtures() {
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await fetch(
+          `http://localhost:5000/api/fixtures?date=${date}`,
+        );
 
         const data = await response.json();
 
-        setApiFixtures(data.response);
+        // Check whether the request was successful
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to fetch fixtures");
+        }
 
-        console.log("Live football fixtures:", data.response);
+        // Store the fixtures returned by API-Football
+        setApiFixtures(data.response || []);
       } catch (error) {
-        console.error("Error fetching fixtures:", error);
+        console.error("Fixtures fetching error:", error);
+        setError(error.message);
+      } finally {
+        setLoading(false);
       }
     }
 
-    fetchLiveFixtures();
-  }, []);
+    fetchFixtures();
+  }, [selectedDay]);
 
   // Convert API data into our application's format
   const matches = formatFixtures(apiFixtures);
@@ -91,14 +142,17 @@ function Home() {
       selectedStatus === "ALL" || match.status === selectedStatus;
 
     const matchesLeague =
-      selectedLeague === "ALL" || match.league === selectedLeague;
+      selectedLeague === "ALL" ||
+      match.league.toLowerCase() === selectedLeague.toLowerCase();
 
-    const matchesDay = match.day === selectedDay;
+    const matchesDay = selectedDay === "ALL" || match.day === selectedDay;
+
+    const search = searchQuery.toLowerCase().trim();
 
     const matchesSearch =
-      match.homeTeam.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      match.awayTeam.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      match.league.toLowerCase().includes(searchQuery.toLowerCase());
+      match.homeTeam.toLowerCase().includes(search) ||
+      match.awayTeam.toLowerCase().includes(search) ||
+      match.league.toLowerCase().includes(search);
 
     return matchesStatus && matchesLeague && matchesDay && matchesSearch;
   });
@@ -118,6 +172,18 @@ function Home() {
           </div>
         </div>
 
+        <div className="day-filter">
+          {["Yesterday", "Today", "Tomorrow"].map((day) => (
+            <button
+              key={day}
+              className={`day-btn ${selectedDay === day ? "active" : ""}`}
+              onClick={() => setSelectedDay(day)}
+            >
+              {day}
+            </button>
+          ))}
+        </div>
+
         <div className="search-container">
           <input
             type="text"
@@ -128,14 +194,20 @@ function Home() {
         </div>
 
         <div className="matches-selection">
-          <h2>All Matches</h2>
+          <h2>Live Matches</h2>
 
           <div className="matches-list">
-            {filteredMatches.map((match) => (
-              <MatchCard key={match.id} match={match} />
-            ))}
-
-            {filteredMatches.length === 0 && <p>No matches found.</p>}
+            {isLoading ? (
+              <p>Loading live matches...</p>
+            ) : error ? (
+              <p>{error}</p>
+            ) : filteredMatches.length > 0 ? (
+              filteredMatches.map((match) => (
+                <MatchCard key={match.id} match={match} />
+              ))
+            ) : (
+              <p>No live matches found.</p>
+            )}
           </div>
         </div>
       </main>
