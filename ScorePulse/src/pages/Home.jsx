@@ -99,14 +99,14 @@ function Home() {
   const [error, setError] = useState("");
 
   // Fetch live fixtures from our backend
+  // Fetch fixtures for the selected day
   useEffect(() => {
-    // Create the date for the selected day
+    // Calculate the date for the selected day
     const date = getFixtureDate(selectedDay);
 
-    // Fetch fixtures from our backend
     async function fetchFixtures() {
       try {
-        setLoading(true);
+        setIsLoading(true);
         setError("");
 
         const response = await fetch(
@@ -120,13 +120,13 @@ function Home() {
           throw new Error(data.error || "Failed to fetch fixtures");
         }
 
-        // Store the fixtures returned by API-Football
+        // Store the fixtures
         setApiFixtures(data.response || []);
       } catch (error) {
         console.error("Fixtures fetching error:", error);
         setError(error.message);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     }
 
