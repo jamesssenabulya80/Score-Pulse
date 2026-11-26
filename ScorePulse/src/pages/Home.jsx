@@ -1,3 +1,4 @@
+import ArticleSidebar from "../components/ArticleSideBar";
 import MatchCard from "../components/matchcard";
 import Sidebar from "../components/sidebar";
 
@@ -158,63 +159,66 @@ function Home() {
   });
 
   return (
-    <div className="app-layout">
-      <Sidebar
-        selectedLeague={selectedLeague}
-        onSelectLeague={setSelectedLeague}
-      />
+    <>
+      <div className="app-layout">
+        <Sidebar
+          selectedLeague={selectedLeague}
+          onSelectLeague={setSelectedLeague}
+        />
 
-      <main className="main-content">
-        <div className="page-heading">
-          <div>
-            <div className="logo">
-              <span>SCORE</span>PULSE
+        <main className="main-content">
+          <div className="page-heading">
+            <div>
+              <div className="logo">
+                <span>SCORE</span>PULSE
+              </div>
+
+              <p>Follow ⚽ from around the world.</p>
             </div>
-
-            <p>Follow ⚽ from around the world.</p>
           </div>
-        </div>
 
-        <div className="day-filter">
-          {["Yesterday", "Today", "Tomorrow"].map((day) => (
-            <button
-              key={day}
-              className={`day-btn ${selectedDay === day ? "active" : ""}`}
-              onClick={() => setSelectedDay(day)}
-            >
-              {day}
-            </button>
-          ))}
-        </div>
-
-        <div className="search-container">
-          <input
-            type="text"
-            placeholder="Search teams or competitions..."
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-          />
-        </div>
-
-        <div className="matches-selection">
-          <h2>Football Fixtures</h2>
-
-          <div className="matches-list">
-            {isLoading ? (
-              <p>Loading live matches...</p>
-            ) : error ? (
-              <p>{error}</p>
-            ) : filteredMatches.length > 0 ? (
-              filteredMatches.map((match) => (
-                <MatchCard key={match.id} match={match} />
-              ))
-            ) : (
-              <p>No matches found for {selectedDay} .</p>
-            )}
+          <div className="day-filter">
+            {["Yesterday", "Today", "Tomorrow"].map((day) => (
+              <button
+                key={day}
+                className={`day-btn ${selectedDay === day ? "active" : ""}`}
+                onClick={() => setSelectedDay(day)}
+              >
+                {day}
+              </button>
+            ))}
           </div>
-        </div>
-      </main>
-    </div>
+
+          <div className="search-container">
+            <input
+              type="text"
+              placeholder="Search teams or competitions..."
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+            />
+          </div>
+
+          <div className="matches-selection">
+            <h2>Football Fixtures</h2>
+
+            <div className="matches-list">
+              {isLoading ? (
+                <p>Loading live matches...</p>
+              ) : error ? (
+                <p>{error}</p>
+              ) : filteredMatches.length > 0 ? (
+                filteredMatches.map((match) => (
+                  <MatchCard key={match.id} match={match} />
+                ))
+              ) : (
+                <p>No matches found for {selectedDay} .</p>
+              )}
+            </div>
+          </div>
+        </main>
+        <ArticleSidebar />
+      </div>
+    </>
   );
 }
 

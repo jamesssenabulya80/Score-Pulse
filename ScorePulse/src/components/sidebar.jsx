@@ -39,14 +39,7 @@ function Sidebar({ selectedLeague, onSelectLeague }) {
 
       {/* COMPETITION LIST */}
       <div className="league-list">
-        {/* ALL COMPETITIONS BUTTON */}
-        <button
-          className={`league-item ${selectedLeague === "ALL" ? "active" : ""}`}
-          onClick={() => onSelectLeague("ALL")}
-        >
-          <span className="all-leagues-icon">⚽</span>
-          <span>All Competitions</span>
-        </button>
+        <button onClick={() => onSelectLeague("ALL")}></button>
 
         {/* LOADING STATE */}
         {loading ? (
